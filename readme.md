@@ -21,8 +21,9 @@
 ## Features
 
 - **Intuitive:** easy to use `hasNext` and `getNext` methods
+- **Familiar:** lots of other programming language uses the same API
 - **Tiny:** TBD
-- **Awesome Name:** you know you love it!
+- **Awesome Name:** you have to admit it's pretty rad :sunglasses:
 
 ## Install
 
