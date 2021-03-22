@@ -1,0 +1,84 @@
+{
+  "name": "betterator",
+  "version": "0.0.0",
+  "author": {
+    "name": "Tomer Aberbach",
+    "email": "tomeraberbach@gmail.com",
+    "url": "https://tomeraberba.ch"
+  },
+  "description": "A better sync and async iterator API.",
+  "keywords": [],
+  "homepage": "https://github.com/TomerAberbach/betterator",
+  "repository": "TomerAberbach/betterator",
+  "bugs": {
+    "url": "https://github.com/TomerAberbach/betterator/issues"
+  },
+  "license": "Apache-2.0",
+  "files": [
+    "src"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">= 12.17"
+  },
+  "browserslist": [
+    "defaults",
+    "not IE 11",
+    "not op_mini all"
+  ],
+  "exports": "./src/index.js",
+  "module": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "scripts": {
+    "lint:prettier:base": "prettier --loglevel silent --ignore-path .gitignore",
+    "lint:prettier": "run-s \"lint:prettier:base -- --write .\"",
+    "lint:eslint:base": "eslint --cache --ext js --ignore-path .gitignore",
+    "lint:eslint": "run-s \"lint:eslint:base -- --fix .\"",
+    "lint": "run-s lint:*",
+    "test:js": "ava",
+    "test:ts": "tsd",
+    "test": "run-s test:*",
+    "coverage": "c8 run-s test:js"
+  },
+  "prettier": "@tomer/prettier-config",
+  "eslintConfig": {
+    "extends": "@tomer"
+  },
+  "lint-staged": {
+    "*.js": [
+      "run-s \"lint:prettier:base -- --write {@}\" --",
+      "run-s \"lint:eslint:base -- --fix {@}\" --"
+    ],
+    "*.ts": "run-s \"lint:prettier:base -- --write {@}\" --",
+    "*.{json,yml,md}": "run-s \"lint:prettier:base -- --write {@}\" --"
+  },
+  "tsd": {
+    "directory": "./test"
+  },
+  "commitlint": {
+    "extends": "@commitlint/config-conventional"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "devDependencies": {
+    "@commitlint/cli": "12.0.1",
+    "@commitlint/config-conventional": "12.0.1",
+    "@tomer/eslint-config": "0.1.0",
+    "@tomer/prettier-config": "0.1.0",
+    "ava": "3.15.0",
+    "ava-fast-check": "4.0.2",
+    "c8": "7.6.0",
+    "eslint": "7.22.0",
+    "fast-check": "2.14.0",
+    "husky": "5.2.0",
+    "lint-staged": "10.5.4",
+    "npm-run-all": "4.1.5",
+    "prettier": "2.2.1",
+    "tsd": "0.14.0",
+    "typescript": "4.2.3"
+  }
+}
