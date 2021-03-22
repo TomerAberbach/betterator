@@ -30,6 +30,7 @@
   "module": "./src/index.js",
   "types": "./src/index.d.ts",
   "scripts": {
+    "license": "addlicense $(git diff --name-only HEAD)",
     "lint:prettier:base": "prettier --loglevel silent --ignore-path .gitignore",
     "lint:prettier": "run-s \"lint:prettier:base -- --write .\"",
     "lint:eslint:base": "eslint --cache --ext js --ignore-path .gitignore",
@@ -46,10 +47,14 @@
   },
   "lint-staged": {
     "*.js": [
+      "addlicense",
       "run-s \"lint:prettier:base -- --write {@}\" --",
       "run-s \"lint:eslint:base -- --fix {@}\" --"
     ],
-    "*.ts": "run-s \"lint:prettier:base -- --write {@}\" --",
+    "*.ts": [
+      "addlicense",
+      "run-s \"lint:prettier:base -- --write {@}\" --"
+    ],
     "*.{json,yml,md}": "run-s \"lint:prettier:base -- --write {@}\" --"
   },
   "tsd": {
@@ -74,7 +79,7 @@
     "c8": "7.6.0",
     "eslint": "7.22.0",
     "fast-check": "2.14.0",
-    "husky": "5.2.0",
+    "husky": "4.3.8",
     "lint-staged": "10.5.4",
     "npm-run-all": "4.1.5",
     "prettier": "2.2.1",

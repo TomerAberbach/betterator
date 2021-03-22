@@ -18,12 +18,6 @@
   A better sync and async iterator API.
 </div>
 
-## Features
-
-- **Wow:** so amazing
-- **Amazing:** so wow 
-- **Fancy:** has a tie and everything
-
 ## Install
 
 ```sh
@@ -33,18 +27,47 @@ $ npm i betterator
 ## Usage
 
 ```js
-import betterator from 'betterator'
+import { Betterator, AsyncBetterator } from 'betterator'
 
-console.log(betterator())
-//=> Hello World!
+const slothActivities = [`sleeping`, `eating`, `climbing`]
+
+// Or `new Betterator(slothActivities[Symbol.iterator]())`
+const iterator = Betterator.fromIterable(slothActivities)
+
+while (iterator.hasNext()) {
+  console.log(iterator.getNext())
+}
+//=> sleeping
+//=> eating
+//=> climbing
+
+const asyncSlothActivities = (async function* () {
+  yield* slothActivities
+})()
+
+// Or `new AsyncBetterator(slothActivities[Symbol.asyncIterator]())`
+const asyncIterator = AsyncBetterator.fromAsyncIterable(asyncSlothActivities)
+
+while (await asyncIterator.hasNext()) {
+  console.log(await asyncIterator.getNext())
+}
+//=> sleeping
+//=> eating
+//=> climbing
 ```
+
+See the
+[type definitions](https://github.com/TomerAberbach/betterator/blob/main/src/index.d.ts)
+for more documentation.
 
 ## Contributing
 
 Stars are always welcome!
 
-For bugs and feature requests, [please create an issue](https://github.com/TomerAberbach/betterator/issues/new).
+For bugs and feature requests,
+[please create an issue](https://github.com/TomerAberbach/betterator/issues/new).
 
 ## License
 
-[Apache License 2.0](https://github.com/TomerAberbach/betterator/blob/main/license) © [Tomer Aberbach](https://github.com/TomerAberbach)
+[Apache License 2.0](https://github.com/TomerAberbach/betterator/blob/main/license)
+© [Tomer Aberbach](https://github.com/TomerAberbach)
