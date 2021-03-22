@@ -18,6 +18,12 @@
   A better sync and async iterator API.
 </div>
 
+## Features
+
+- **Intuitive:** easy to use `hasNext` and `getNext` methods
+- **Tiny:** TBD
+- **Awesome Name:** you know you love it!
+
 ## Install
 
 ```sh
