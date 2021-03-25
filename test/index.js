@@ -83,8 +83,8 @@ testProp(
 
     for (let i = 0; i < 10; i++) {
       t.is(
-        fn(),
-        iterator.getNextOr(() => fn())
+        iterator.getNextOr(() => fn()),
+        fn()
       )
     }
   }
@@ -127,8 +127,8 @@ test(`Betterator concrete example`, t => {
   })
 
   t.is(
-    42,
-    iterator.getNextOr(() => 42)
+    iterator.getNextOr(() => 42),
+    42
   )
 })
 
@@ -184,7 +184,7 @@ testProp(
     }
 
     for (let i = 0; i < 10; i++) {
-      t.is(await fn(), await asyncIterator.getNextOr(() => fn()))
+      t.is(await asyncIterator.getNextOr(() => fn()), await fn())
     }
   }
 )
@@ -225,5 +225,5 @@ test(`AsyncBetterator concrete example`, async t => {
     message: `Doesn't have next`
   })
 
-  t.is(42, await asyncIterator.getNextOr(() => delay(1).then(() => 42)))
+  t.is(await asyncIterator.getNextOr(() => delay(1).then(() => 42)), 42)
 })
