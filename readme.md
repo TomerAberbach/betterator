@@ -48,6 +48,16 @@ while (iterator.hasNext()) {
 //=> eating
 //=> climbing
 
+try {
+  iterator.getNext()
+} catch (e) {
+  console.log(e.message)
+}
+//=> Doesn't have next
+
+console.log(iterator.getNextOr(() => `being lazy`))
+//=> being lazy
+
 const asyncSlothActivities = (async function* () {
   yield* slothActivities
 })()
@@ -61,6 +71,19 @@ while (await asyncIterator.hasNext()) {
 //=> sleeping
 //=> eating
 //=> climbing
+
+try {
+  await asyncIterator.getNext()
+} catch (e) {
+  console.log(e.message)
+}
+//=> Doesn't have next
+
+const delay = timeout => new Promise(resolve => setTimeout(resolve, timeout))
+console.log(
+  await asyncIterator.getNextOr(() => delay(10).then(() => `being lazy`))
+)
+//=> being lazy
 ```
 
 See the
