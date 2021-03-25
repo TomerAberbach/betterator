@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+const throwNoNext = () => {
+  throw new Error(`Doesn't have next`)
+}
+
 export class Betterator {
   constructor(iterator) {
     this.iterator = iterator
@@ -25,8 +29,12 @@ export class Betterator {
   }
 
   getNext() {
+    return this.getNextOr(throwNoNext)
+  }
+
+  getNextOr(or) {
     if (!this.hasNext()) {
-      throw new Error(`Doesn't have next`)
+      return or()
     }
 
     const { value } = this.result
@@ -54,9 +62,13 @@ export class AsyncBetterator {
     )
   }
 
-  async getNext() {
+  getNext() {
+    return this.getNextOr(throwNoNext)
+  }
+
+  async getNextOr(or) {
     if (!(await this.hasNext())) {
-      throw new Error(`Doesn't have next`)
+      return or()
     }
 
     const { value } = await this.resultPromise

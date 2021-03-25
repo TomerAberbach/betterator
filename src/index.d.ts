@@ -50,6 +50,27 @@ export class Betterator<Value> {
   getNext(): Value
 
   /**
+   * Returns the next element of the underlying native iterator if it has a next
+   * element. Otherwise, it returns the result of calling `or`.
+   *
+   * @example
+   * ```js
+   * const slothActivities = [`sleeping`, `eating`, `climbing`]
+   *
+   * const iterator = Betterator.fromIterable(slothActivities)
+   * for (let i = 0; i < 5; i++) {
+   *   console.log(iterator.getNextOr(() => `No ${i + 1}th element!`))
+   * }
+   * //=> sleeping
+   * //=> eating
+   * //=> climbing
+   * //=> No 4th element!
+   * //=> No 5th element!
+   * ```
+   */
+  getNextOr<Default>(or: () => Default): Value | Default
+
+  /**
    * Returns an {@link Betterator} constructed from the iterator returned by
    * `iterable`'s `Symbol.iterator` method.
    */
@@ -96,6 +117,34 @@ export class AsyncBetterator<Value> {
    *   element.
    */
   getNext(): Promise<Value>
+
+  /**
+   * Returns a promise that resolves to the next element of the underlying
+   * native async iterator if it has a next element. Otherwise, it returns the
+   * result of calling `or` as a promise.
+   *
+   * @example
+   * ```js
+   * const slothActivities = (async function*() {
+   *   yield* [`sleeping`, `eating`, `climbing`]
+   * })()
+   *
+   * const asyncIterator = AsyncBetterator.fromAsyncIterable(slothActivities)
+   * for (let i = 0; i < 5; i++) {
+   *   console.log(
+   *     await asyncIterator.getNextOr(() => `No ${i + 1}th element!`)
+   *   )
+   * }
+   * //=> sleeping
+   * //=> eating
+   * //=> climbing
+   * //=> No 4th element!
+   * //=> No 5th element!
+   * ```
+   */
+  getNextOr<Default>(
+    or: () => Default | PromiseLike<Default>
+  ): Promise<Value | Default>
 
   /**
    * Returns an {@link AsyncBetterator} constructed from the async

@@ -17,6 +17,8 @@
 import { testProp, test, fc } from 'ava-fast-check'
 import { AsyncBetterator, Betterator } from '../src/index.js'
 
+const delay = timeout => new Promise(resolve => setTimeout(resolve, timeout))
+
 const asAsync = iterable => ({
   async *[Symbol.asyncIterator]() {
     yield* iterable
@@ -70,6 +72,38 @@ testProp(
   }
 )
 
+testProp(
+  `Betterator.getNextOr calls the given function for an exhausted iterator`,
+  [iterableArb, fc.func(fc.anything())],
+  (t, iterable, fn) => {
+    const iterator = Betterator.fromIterable(iterable)
+    while (iterator.hasNext()) {
+      iterator.getNext()
+    }
+
+    for (let i = 0; i < 10; i++) {
+      t.is(
+        fn(),
+        iterator.getNextOr(() => fn())
+      )
+    }
+  }
+)
+
+testProp(
+  `Betterator.getNextOr does not call the given function for a non-exhausted iterator`,
+  [iterableArb],
+  (t, iterable) => {
+    const iterator = Betterator.fromIterable(iterable)
+
+    while (iterator.hasNext()) {
+      iterator.getNextOr(() => t.fail())
+    }
+
+    t.pass()
+  }
+)
+
 test(`Betterator concrete example`, t => {
   const values = [1, 2, 3, 4]
 
@@ -91,6 +125,11 @@ test(`Betterator concrete example`, t => {
     instanceOf: Error,
     message: `Doesn't have next`
   })
+
+  t.is(
+    42,
+    iterator.getNextOr(() => 42)
+  )
 })
 
 testProp(
@@ -130,6 +169,40 @@ testProp(
   }
 )
 
+testProp(
+  `AsyncBetterator.getNextOr calls the given function for an exhausted async iterator`,
+  [
+    asyncIterableArb,
+    fc
+      .tuple(fc.func(fc.anything()), fc.boolean())
+      .map(([fn, promise]) => (promise ? () => delay(1).then(() => fn()) : fn))
+  ],
+  async (t, asyncIterable, fn) => {
+    const asyncIterator = AsyncBetterator.fromAsyncIterable(asyncIterable)
+    while (await asyncIterator.hasNext()) {
+      await asyncIterator.getNext()
+    }
+
+    for (let i = 0; i < 10; i++) {
+      t.is(await fn(), await asyncIterator.getNextOr(() => fn()))
+    }
+  }
+)
+
+testProp(
+  `AsyncBetterator.getNextOr does not call the given function for a non-exhausted async iterator`,
+  [asyncIterableArb],
+  async (t, asyncIterable) => {
+    const asyncIterator = AsyncBetterator.fromAsyncIterable(asyncIterable)
+
+    while (await asyncIterator.hasNext()) {
+      await asyncIterator.getNextOr(() => t.fail())
+    }
+
+    t.pass()
+  }
+)
+
 test(`AsyncBetterator concrete example`, async t => {
   const values = [1, 2, 3, 4]
 
@@ -151,4 +224,6 @@ test(`AsyncBetterator concrete example`, async t => {
     instanceOf: Error,
     message: `Doesn't have next`
   })
+
+  t.is(42, await asyncIterator.getNextOr(() => delay(1).then(() => 42)))
 })

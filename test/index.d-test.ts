@@ -23,6 +23,13 @@ const iterator = Betterator.fromIterable([1, 2, 3])
 expectType<Betterator<number>>(iterator)
 expectType<boolean>(iterator.hasNext())
 expectType<number>(iterator.getNext())
+expectType<number>(iterator.getNextOr(() => 5))
+expectType<number | string>(iterator.getNextOr(() => `Hello World!`))
+expectType<number | never>(
+  iterator.getNextOr(() => {
+    throw new Error(`Oops`)
+  })
+)
 
 const asyncIterable = (async function* () {
   yield* [1, 2, 3]
@@ -33,3 +40,18 @@ const asyncIterator = AsyncBetterator.fromAsyncIterable(asyncIterable)
 expectType<AsyncBetterator<number>>(asyncIterator)
 expectType<Promise<boolean>>(asyncIterator.hasNext())
 expectType<Promise<number>>(asyncIterator.getNext())
+expectType<Promise<number>>(asyncIterator.getNextOr(() => 5))
+expectType<Promise<number>>(asyncIterator.getNextOr(() => Promise.resolve(5)))
+expectType<Promise<number | string>>(
+  asyncIterator.getNextOr(() => `Hello World!`)
+)
+expectType<Promise<number | string>>(
+  asyncIterator.getNextOr(() => Promise.resolve(`Hello World!`))
+)
+expectType<Promise<number | never>>(
+  asyncIterator.getNextOr(() =>
+    Promise.resolve().then(() => {
+      throw new Error(`Oops`)
+    })
+  )
+)
