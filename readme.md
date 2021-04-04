@@ -21,7 +21,7 @@
 ## Features
 
 - **Intuitive:** easy to use `hasNext` and `getNext` methods
-- **Familiar:** lots of other programming language use the same API
+- **Familiar:** lots of other programming languages use the same API
 - **Tiny:** less than 430 bytes minzipped
 - **Awesome Name:** you have to admit it's pretty rad :sunglasses:
 
