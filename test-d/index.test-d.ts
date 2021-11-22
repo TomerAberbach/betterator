@@ -28,7 +28,7 @@ expectType<number | string>(iterator.getNextOr(() => `Hello World!`))
 expectType<number | never>(
   iterator.getNextOr(() => {
     throw new Error(`Oops`)
-  })
+  }),
 )
 
 const asyncIterable = (async function* () {
@@ -43,15 +43,15 @@ expectType<Promise<number>>(asyncIterator.getNext())
 expectType<Promise<number>>(asyncIterator.getNextOr(() => 5))
 expectType<Promise<number>>(asyncIterator.getNextOr(() => Promise.resolve(5)))
 expectType<Promise<number | string>>(
-  asyncIterator.getNextOr(() => `Hello World!`)
+  asyncIterator.getNextOr(() => `Hello World!`),
 )
 expectType<Promise<number | string>>(
-  asyncIterator.getNextOr(() => Promise.resolve(`Hello World!`))
+  asyncIterator.getNextOr(() => Promise.resolve(`Hello World!`)),
 )
 expectType<Promise<number | never>>(
   asyncIterator.getNextOr(() =>
     Promise.resolve().then(() => {
       throw new Error(`Oops`)
-    })
-  )
+    }),
+  ),
 )

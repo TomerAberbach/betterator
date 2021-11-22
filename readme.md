@@ -81,7 +81,7 @@ try {
 
 const delay = timeout => new Promise(resolve => setTimeout(resolve, timeout))
 console.log(
-  await asyncIterator.getNextOr(() => delay(10).then(() => `being lazy`))
+  await asyncIterator.getNextOr(() => delay(10).then(() => `being lazy`)),
 )
 //=> being lazy
 ```
