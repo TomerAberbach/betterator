@@ -22,15 +22,15 @@ const delay = timeout => new Promise(resolve => setTimeout(resolve, timeout))
 const asAsync = iterable => ({
   async *[Symbol.asyncIterator]() {
     yield* iterable
-  }
+  },
 })
 
 const iterableArb = fc.oneof(
   fc.array(fc.anything()),
   fc.tuple(fc.array(fc.anything()), fc.object()).map(([array, object]) => ({
     ...object,
-    [Symbol.iterator]: () => array[Symbol.iterator]()
-  }))
+    [Symbol.iterator]: () => array[Symbol.iterator](),
+  })),
 )
 
 const asyncIterableArb = iterableArb.map(asAsync)
@@ -52,7 +52,7 @@ testProp(
 
     t.false(iterator.hasNext())
     t.true(nativeIterator.next().done)
-  }
+  },
 )
 
 testProp(
@@ -67,9 +67,9 @@ testProp(
 
     t.throws(() => iterator.getNext(), {
       instanceOf: Error,
-      message: `Doesn't have next`
+      message: `Doesn't have next`,
     })
-  }
+  },
 )
 
 testProp(
@@ -84,10 +84,10 @@ testProp(
     for (let i = 0; i < 10; i++) {
       t.is(
         iterator.getNextOr(() => fn()),
-        fn()
+        fn(),
       )
     }
-  }
+  },
 )
 
 testProp(
@@ -101,7 +101,7 @@ testProp(
     }
 
     t.pass()
-  }
+  },
 )
 
 test(`Betterator concrete example`, t => {
@@ -123,12 +123,12 @@ test(`Betterator concrete example`, t => {
 
   t.throws(() => iterator.getNext(), {
     instanceOf: Error,
-    message: `Doesn't have next`
+    message: `Doesn't have next`,
   })
 
   t.is(
     iterator.getNextOr(() => 42),
-    42
+    42,
   )
 })
 
@@ -149,7 +149,7 @@ testProp(
 
     t.false(await asyncIterator.hasNext())
     t.true((await nativeAsyncIterator.next()).done)
-  }
+  },
 )
 
 testProp(
@@ -164,9 +164,9 @@ testProp(
 
     await t.throwsAsync(() => asyncIterator.getNext(), {
       instanceOf: Error,
-      message: `Doesn't have next`
+      message: `Doesn't have next`,
     })
-  }
+  },
 )
 
 testProp(
@@ -175,7 +175,7 @@ testProp(
     asyncIterableArb,
     fc
       .tuple(fc.func(fc.anything()), fc.boolean())
-      .map(([fn, promise]) => (promise ? () => delay(1).then(() => fn()) : fn))
+      .map(([fn, promise]) => (promise ? () => delay(1).then(() => fn()) : fn)),
   ],
   async (t, asyncIterable, fn) => {
     const asyncIterator = AsyncBetterator.fromAsyncIterable(asyncIterable)
@@ -186,7 +186,7 @@ testProp(
     for (let i = 0; i < 10; i++) {
       t.is(await asyncIterator.getNextOr(() => fn()), await fn())
     }
-  }
+  },
 )
 
 testProp(
@@ -200,7 +200,7 @@ testProp(
     }
 
     t.pass()
-  }
+  },
 )
 
 test(`AsyncBetterator concrete example`, async t => {
@@ -222,7 +222,7 @@ test(`AsyncBetterator concrete example`, async t => {
 
   await t.throwsAsync(() => asyncIterator.getNext(), {
     instanceOf: Error,
-    message: `Doesn't have next`
+    message: `Doesn't have next`,
   })
 
   t.is(await asyncIterator.getNextOr(() => delay(1).then(() => 42)), 42)

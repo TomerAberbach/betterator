@@ -1,13 +1,18 @@
 {
   "name": "betterator",
-  "version": "0.0.2",
+  "version": "0.0.0",
   "author": {
     "name": "Tomer Aberbach",
     "email": "tomeraberbach@gmail.com",
     "url": "https://tomeraberba.ch"
   },
   "description": "A better sync and async iterator API.",
-  "keywords": [],
+  "keywords": [
+    "iterator",
+    "iterable",
+    "sync",
+    "async"
+  ],
   "homepage": "https://github.com/TomerAberbach/betterator",
   "repository": "TomerAberbach/betterator",
   "bugs": {
@@ -15,7 +20,8 @@
   },
   "license": "Apache-2.0",
   "files": [
-    "src"
+    "dist",
+    "src/index.d.ts"
   ],
   "type": "module",
   "engines": {
@@ -26,63 +32,25 @@
     "not IE 11",
     "not op_mini all"
   ],
-  "exports": "./src/index.js",
-  "module": "./src/index.js",
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./src/index.d.ts",
   "scripts": {
-    "prepare": "pnpx --no-install simple-git-hooks",
-    "license": "addlicense $(git diff --name-only HEAD)",
-    "lint:prettier:base": "prettier --loglevel silent --ignore-path .gitignore",
-    "lint:prettier": "run-s \"lint:prettier:base -- --write .\"",
-    "lint:eslint:base": "eslint --cache --ext js --ignore-path .gitignore",
-    "lint:eslint": "run-s \"lint:eslint:base -- --fix .\"",
-    "lint": "run-s lint:*",
-    "test:js": "ava",
-    "test:ts": "tsd",
-    "test": "run-s test:*",
-    "coverage": "c8 run-s test:js"
-  },
-  "prettier": "@tomer/prettier-config",
-  "eslintConfig": {
-    "extends": "@tomer"
-  },
-  "lint-staged": {
-    "*.js": [
-      "addlicense",
-      "run-s \"lint:prettier:base -- --write {@}\" --",
-      "run-s \"lint:eslint:base -- --fix {@}\" --"
-    ],
-    "*.ts": [
-      "addlicense",
-      "run-s \"lint:prettier:base -- --write {@}\" --"
-    ],
-    "*.{json,yml,md}": "run-s \"lint:prettier:base -- --write {@}\" --"
-  },
-  "tsd": {
-    "directory": "./test"
-  },
-  "commitlint": {
-    "extends": "@commitlint/config-conventional"
-  },
-  "simple-git-hooks": {
-    "pre-commit": "pnpx --no-install lint-staged",
-    "commit-msg": "pnpx --no-install commitlint -e"
+    "prepare": "tomer install",
+    "lint": "tomer lint -g",
+    "test": "tomer test",
+    "build": "tomer build -f \"esm,cjs\" src/index.js",
+    "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "@commitlint/cli": "12.0.1",
-    "@commitlint/config-conventional": "12.0.1",
-    "@tomer/eslint-config": "0.1.0",
-    "@tomer/prettier-config": "0.1.0",
     "ava": "3.15.0",
     "ava-fast-check": "4.0.2",
-    "c8": "7.6.0",
-    "eslint": "7.22.0",
-    "fast-check": "2.14.0",
-    "lint-staged": "10.5.4",
-    "npm-run-all": "4.1.5",
-    "prettier": "2.2.1",
-    "simple-git-hooks": "2.4.1",
-    "tsd": "0.14.0",
-    "typescript": "4.2.3"
+    "fast-check": "2.19.0",
+    "tomer": "0.0.19",
+    "tsd": "0.19.0"
   }
 }

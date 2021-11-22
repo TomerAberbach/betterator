@@ -143,7 +143,7 @@ export class AsyncBetterator<Value> {
    * ```
    */
   getNextOr<Default>(
-    or: () => Default | PromiseLike<Default>
+    or: () => Default | PromiseLike<Default>,
   ): Promise<Value | Default>
 
   /**
@@ -151,6 +151,6 @@ export class AsyncBetterator<Value> {
    * iterator returned by `asyncIterable`'s `Symbol.asyncIterator` method.
    */
   static fromAsyncIterable<Value>(
-    asyncIterable: AsyncIterable<Value>
+    asyncIterable: AsyncIterable<Value>,
   ): AsyncBetterator<Value>
 }
