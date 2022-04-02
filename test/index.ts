@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import { expectTypeOf, fc, testProp } from 'tomer'
+import { expectTypeOf, fc, jest, testProp } from 'tomer'
 import { AsyncBetterator, Betterator } from '../src/index.js'
+
+jest.useFakeTimers()
 
 const iterableArb = fc.oneof(
   fc.array(fc.anything()),
@@ -125,7 +127,7 @@ test(`Betterator concrete example`, () => {
 testProp(
   `AsyncBetterator iterates like a native async iterator`,
   [asyncIterableArb],
-  async asyncIterable => {
+  withAutoAdvancingTimers(async asyncIterable => {
     const asyncIterator = AsyncBetterator.fromAsyncIterable(asyncIterable)
     const nativeAsyncIterator = asyncIterable[Symbol.asyncIterator]()
 
@@ -139,13 +141,13 @@ testProp(
 
     expect(await asyncIterator.hasNext()).toBeFalse()
     expect((await nativeAsyncIterator.next()).done).toBeTrue()
-  },
+  }),
 )
 
 testProp(
   `AsyncBetterator.getNext throws an error when the async iterator has been exhausted`,
   [asyncIterableArb],
-  async asyncIterable => {
+  withAutoAdvancingTimers(async asyncIterable => {
     const asyncIterator = AsyncBetterator.fromAsyncIterable(asyncIterable)
 
     while (await asyncIterator.hasNext()) {
@@ -156,7 +158,7 @@ testProp(
       Error,
       `Doesn't have next`,
     )
-  },
+  }),
 )
 
 testProp(
@@ -169,7 +171,7 @@ testProp(
         promise ? (): Promise<unknown> => delay(1).then(() => fn()) : fn,
       ),
   ],
-  async (asyncIterable, fn) => {
+  withAutoAdvancingTimers(async (asyncIterable, fn) => {
     const asyncIterator = AsyncBetterator.fromAsyncIterable(asyncIterable)
     while (await asyncIterator.hasNext()) {
       await asyncIterator.getNext()
@@ -178,13 +180,13 @@ testProp(
     for (let i = 0; i < 10; i++) {
       expect(await asyncIterator.getNextOr(fn)).toBe(await fn())
     }
-  },
+  }),
 )
 
 testProp(
   `AsyncBetterator.getNextOr does not call the given function for a non-exhausted async iterator`,
   [asyncIterableArb],
-  async asyncIterable => {
+  withAutoAdvancingTimers(async asyncIterable => {
     const asyncIterator = AsyncBetterator.fromAsyncIterable(asyncIterable)
 
     while (await asyncIterator.hasNext()) {
@@ -192,37 +194,63 @@ testProp(
         () => expect.fail(`Expected or function to not be called`) as unknown,
       )
     }
-  },
+  }),
 )
 
-test(`AsyncBetterator concrete example`, async () => {
-  const values = [1, 2, 3, 4]
+test(
+  `AsyncBetterator concrete example`,
+  withAutoAdvancingTimers(async () => {
+    const values = [1, 2, 3, 4]
 
-  const asyncIterator = AsyncBetterator.fromAsyncIterable(asAsync(values))
+    const asyncIterator = AsyncBetterator.fromAsyncIterable(asAsync(values))
 
-  expectTypeOf(asyncIterator).toEqualTypeOf<AsyncBetterator<number>>()
-  expectTypeOf(asyncIterator.hasNext()).toEqualTypeOf<Promise<boolean>>()
+    expectTypeOf(asyncIterator).toEqualTypeOf<AsyncBetterator<number>>()
+    expectTypeOf(asyncIterator.hasNext()).toEqualTypeOf<Promise<boolean>>()
 
-  expect(await asyncIterator.hasNext()).toBeTrue()
-  const value = await asyncIterator.getNext()
-  expectTypeOf(value).toEqualTypeOf<number>()
-  expect(value).toBe(1)
+    expect(await asyncIterator.hasNext()).toBeTrue()
+    const value = await asyncIterator.getNext()
+    expectTypeOf(value).toEqualTypeOf<number>()
+    expect(value).toBe(1)
 
-  expect(await asyncIterator.hasNext()).toBeTrue()
-  expect(await asyncIterator.getNext()).toBe(2)
+    expect(await asyncIterator.hasNext()).toBeTrue()
+    expect(await asyncIterator.getNext()).toBe(2)
 
-  expect(await asyncIterator.hasNext()).toBeTrue()
-  expect(await asyncIterator.getNext()).toBe(3)
+    expect(await asyncIterator.hasNext()).toBeTrue()
+    expect(await asyncIterator.getNext()).toBe(3)
 
-  expect(await asyncIterator.hasNext()).toBeTrue()
-  expect(await asyncIterator.getNext()).toBe(4)
+    expect(await asyncIterator.hasNext()).toBeTrue()
+    expect(await asyncIterator.getNext()).toBe(4)
 
-  await expect(() => asyncIterator.getNext()).rejects.toThrowWithMessage(
-    Error,
-    `Doesn't have next`,
-  )
-  expect(await asyncIterator.getNextOr(() => delay(1).then(() => 42))).toBe(42)
-})
+    await expect(() => asyncIterator.getNext()).rejects.toThrowWithMessage(
+      Error,
+      `Doesn't have next`,
+    )
+    expect(await asyncIterator.getNextOr(() => delay(1).then(() => 42))).toBe(
+      42,
+    )
+  }),
+)
+
+function withAutoAdvancingTimers<Args extends unknown[]>(
+  fn: (...args: Args) => Promise<void>,
+): (...args: Args) => Promise<void> {
+  return async (...args) => {
+    let done = false
+    const promise = fn(...args)
+    promise.then(
+      () => (done = true),
+      () => (done = true),
+    )
+
+    // eslint-disable-next-line no-unmodified-loop-condition, @typescript-eslint/no-unnecessary-condition
+    while (!done) {
+      jest.runAllTimers()
+      await Promise.resolve()
+    }
+
+    return promise
+  }
+}
 
 function delay(timeout: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, timeout))
