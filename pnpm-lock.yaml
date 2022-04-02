@@ -15,10 +15,10 @@
 lockfileVersion: 5.3
 
 specifiers:
-  tomer: ^0.1.3
+  tomer: ^0.1.4
 
 devDependencies:
-  tomer: 0.1.3
+  tomer: 0.1.4
 
 packages:
   /@ampproject/remapping/2.1.2:
@@ -9650,10 +9650,10 @@ packages:
       is-number: 7.0.0
     dev: true
 
-  /tomer/0.1.3:
+  /tomer/0.1.4:
     resolution:
       {
-        integrity: sha512-Kg1WfeQa5zBd3JYW9wjR1NFFQDhW5nnmHIR5GWOQQUliN+WIIxGofhNYoWrMVal0sI9JoLXwzsUhJV8PVBKyzg==,
+        integrity: sha512-yTd3Vj+/cWoNZbTwCFxtX+qUlblcGib04qKj9zXOBz69lciM3clbuqh1K1NUAymk0AoLbOb6ZWSeQWZzg0opZA==,
       }
     engines: { node: '>= 16' }
     hasBin: true
