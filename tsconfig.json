@@ -1,5 +1,9 @@
 {
+  "extends": "tomer/tsconfig.json",
   "compilerOptions": {
-    "lib": ["ESNext"]
+    "typeRoots": [
+      "./node_modules/tomer/node_modules/@types",
+      "./node_modules/@types"
+    ]
   }
 }

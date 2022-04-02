@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
+
 /**
  * A wrapper around the native iterator that provides a better API.
  *
@@ -31,8 +33,16 @@
  * ```
  */
 export class Betterator<Value> {
+  /** @internal */
+  private readonly _iterator: Iterator<Value>
+
+  /** @internal */
+  private _result: IteratorResult<Value, Value> | undefined
+
   /** Constructs an {@link Betterator} from `iterator`. */
-  constructor(iterator: Iterator<Value>)
+  public constructor(iterator: Iterator<Value>) {
+    this._iterator = iterator
+  }
 
   /**
    * Returns `true` if the underlying native iterator of this {@link Betterator}
@@ -40,14 +50,20 @@ export class Betterator<Value> {
    *
    * This method may call the underlying native iterator's `next` method.
    */
-  hasNext(): boolean
+  public hasNext(): boolean {
+    return (
+      (this._result || (this._result = this._iterator.next())).done !== true
+    )
+  }
 
   /**
    * Returns the next element of the underlying native iterator.
    *
    * @throws if the underlying native iterator does not have a next element.
    */
-  getNext(): Value
+  public getNext(): Value {
+    return this.getNextOr(throwNoNext)
+  }
 
   /**
    * Returns the next element of the underlying native iterator if it has a next
@@ -68,13 +84,25 @@ export class Betterator<Value> {
    * //=> No 5th element!
    * ```
    */
-  getNextOr<Default>(or: () => Default): Value | Default
+  public getNextOr<Default>(or: () => Default): Value | Default {
+    if (!this.hasNext()) {
+      return or()
+    }
+
+    const { value } = this._result!
+    this._result = undefined
+    return value
+  }
 
   /**
    * Returns an {@link Betterator} constructed from the iterator returned by
    * `iterable`'s `Symbol.iterator` method.
    */
-  static fromIterable<Value>(iterable: Iterable<Value>): Betterator<Value>
+  public static fromIterable<Value>(
+    iterable: Iterable<Value>,
+  ): Betterator<Value> {
+    return new Betterator(iterable[Symbol.iterator]())
+  }
 }
 
 /**
@@ -97,8 +125,16 @@ export class Betterator<Value> {
  * ```
  */
 export class AsyncBetterator<Value> {
+  /** @internal */
+  private readonly _asyncIterator: AsyncIterator<Value>
+
+  /** @internal */
+  private _resultPromise: Promise<IteratorResult<Value, Value>> | undefined
+
   /** Constructs an {@link AsyncBetterator} from `asyncIterator`. */
-  constructor(asyncIterator: AsyncIterator<Value>)
+  public constructor(asyncIterator: AsyncIterator<Value>) {
+    this._asyncIterator = asyncIterator
+  }
 
   /**
    * Returns a promise that resolves to `true` if the underlying native async
@@ -107,7 +143,14 @@ export class AsyncBetterator<Value> {
    *
    * This method may call the underlying native async iterator's `next` method.
    */
-  hasNext(): Promise<boolean>
+  public async hasNext(): Promise<boolean> {
+    return (
+      (
+        await (this._resultPromise ||
+          (this._resultPromise = this._asyncIterator.next()))
+      ).done !== true
+    )
+  }
 
   /**
    * Returns a promise that resolves to the next element of the underlying
@@ -116,7 +159,9 @@ export class AsyncBetterator<Value> {
    * @throws if the underlying native async iterator does not have a next
    *   element.
    */
-  getNext(): Promise<Value>
+  public getNext(): Promise<Value> {
+    return this.getNextOr(throwNoNext)
+  }
 
   /**
    * Returns a promise that resolves to the next element of the underlying
@@ -142,15 +187,29 @@ export class AsyncBetterator<Value> {
    * //=> No 5th element!
    * ```
    */
-  getNextOr<Default>(
+  public async getNextOr<Default>(
     or: () => Default | PromiseLike<Default>,
-  ): Promise<Value | Default>
+  ): Promise<Value | Default> {
+    if (!(await this.hasNext())) {
+      return or()
+    }
+
+    const { value } = (await this._resultPromise)!
+    this._resultPromise = undefined
+    return value
+  }
 
   /**
    * Returns an {@link AsyncBetterator} constructed from the async
    * iterator returned by `asyncIterable`'s `Symbol.asyncIterator` method.
    */
-  static fromAsyncIterable<Value>(
+  public static fromAsyncIterable<Value>(
     asyncIterable: AsyncIterable<Value>,
-  ): AsyncBetterator<Value>
+  ): AsyncBetterator<Value> {
+    return new AsyncBetterator(asyncIterable[Symbol.asyncIterator]())
+  }
+}
+
+function throwNoNext(): never {
+  throw new Error(`Doesn't have next`)
 }
