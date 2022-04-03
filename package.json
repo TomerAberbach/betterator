@@ -24,7 +24,7 @@
   ],
   "type": "module",
   "engines": {
-    "node": ">= 12.17"
+    "node": ">= 14.6"
   },
   "browserslist": [
     "defaults",
