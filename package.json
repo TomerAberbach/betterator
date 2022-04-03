@@ -62,6 +62,6 @@
     "prepublishOnly": "tomer build"
   },
   "devDependencies": {
-    "tomer": "^0.1.4"
+    "tomer": "^0.1.6"
   }
 }
