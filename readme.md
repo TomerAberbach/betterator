@@ -89,9 +89,8 @@ console.log(
 //=> being lazy
 ```
 
-See the
-[type definitions](https://github.com/TomerAberbach/betterator/blob/main/src/index.d.ts)
-for more documentation.
+See the [type definitions](https://unpkg.com/betterator/dist/index.d.ts) for
+more documentation.
 
 ## Contributing
 
