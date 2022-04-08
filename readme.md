@@ -9,8 +9,11 @@
   <a href="https://github.com/TomerAberbach/betterator/actions">
     <img src="https://github.com/TomerAberbach/betterator/workflows/CI/badge.svg" alt="CI" />
   </a>
-  <a href="https://bundlephobia.com/result?p=betterator">
-    <img src="https://badgen.net/bundlephobia/minzip/betterator" alt="minzip size" />
+  <a href="http://img.badgesize.io/https://unpkg.com/betterator/dist/index.min.js?compression=gzip&label=gzip">
+    <img src="https://unpkg.com/betterator/dist/index.min.js" alt="gzip size" />
+  </a>
+  <a href="http://img.badgesize.io/https://unpkg.com/betterator/dist/index.min.js?compression=brotli&label=brotli">
+    <img src="https://unpkg.com/betterator/dist/index.min.js" alt="brotli size" />
   </a>
 </div>
 
@@ -22,7 +25,7 @@
 
 - **Intuitive:** easy to use `hasNext` and `getNext` methods
 - **Familiar:** lots of other programming languages use the same API
-- **Tiny:** less than 350 bytes minzipped
+- **Tiny:** ~400 bytes minzipped
 - **Awesome Name:** you have to admit it's pretty rad :sunglasses:
 
 ## Install
