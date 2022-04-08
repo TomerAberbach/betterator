@@ -27,7 +27,18 @@ const iterableArb = fc.oneof(
   })),
 )
 
-const asyncIterableArb = iterableArb.map(asAsync)
+const asyncIterableArb = fc
+  .tuple(fc.scheduler(), iterableArb)
+  .map(([scheduler, iterable]) => ({
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async *[Symbol.asyncIterator](): AsyncIterator<unknown> {
+      for (const value of iterable) {
+        const promise = scheduler.schedule(Promise.resolve(value))
+        void scheduler.waitOne()
+        yield promise
+      }
+    },
+  }))
 
 testProp(
   `Betterator iterates like a native iterator`,
@@ -198,6 +209,85 @@ testProp(
 )
 
 test(
+  `Concurrent AsyncBetterator#getNext calls at the same tick don't crash`,
+  withAutoAdvancingTimers(async () => {
+    const asyncIterator = new AsyncBetterator(
+      // eslint-disable-next-line @typescript-eslint/require-await
+      (async function* (): AsyncIterator<unknown> {
+        yield delay(2)
+      })(),
+    )
+
+    await Promise.all([
+      (async (): Promise<void> => {
+        // eslint-disable-next-line jest/no-conditional-in-test
+        if (await asyncIterator.hasNext()) {
+          // eslint-disable-next-line jest/no-conditional-expect
+          await expect(() =>
+            asyncIterator.getNext(),
+          ).rejects.toThrowWithMessage(Error, `Doesn't have next`)
+        }
+      })(),
+      asyncIterator.getNext(),
+    ])
+  }),
+)
+
+testProp(
+  `Concurrent AsyncBetterator#hasNext calls return the same value`,
+  [fc.scheduler(), fc.integer({ min: 1, max: 10 }), asyncIterableArb],
+  withAutoAdvancingTimers(async (scheduler, count, asyncIterable) => {
+    const asyncIterator = AsyncBetterator.fromAsyncIterable(asyncIterable)
+
+    let resultsSet
+    do {
+      const results = Promise.all(
+        Array.from({ length: count }, () =>
+          scheduler
+            .schedule(Promise.resolve())
+            .then(() => asyncIterator.hasNext()),
+        ),
+      )
+
+      await scheduler.waitAll()
+      resultsSet = new Set(await results)
+      expect(resultsSet.size).toBe(1)
+
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      await asyncIterator.getNext().catch(() => {})
+    } while (resultsSet.values().next().value)
+  }),
+)
+
+testProp(
+  `Concurrent AsyncBetterator#getNext calls consume the async iterator`,
+  [fc.scheduler(), fc.array(fc.anything())],
+  withAutoAdvancingTimers(async (scheduler, values) => {
+    const asyncIterator = new AsyncBetterator(
+      // eslint-disable-next-line @typescript-eslint/require-await
+      (async function* (): AsyncIterator<unknown> {
+        for (let index = 0; index < values.length; index++) {
+          yield scheduler.schedule(
+            Promise.resolve(index).then(() => values[index]),
+          )
+        }
+      })(),
+    )
+
+    const results = Promise.all(
+      values.map(() =>
+        scheduler
+          .schedule(Promise.resolve())
+          .then(() => asyncIterator.getNext()),
+      ),
+    )
+
+    await scheduler.waitAll()
+    expect(await results).toIncludeSameMembers(values)
+  }),
+)
+
+test(
   `AsyncBetterator concrete example`,
   withAutoAdvancingTimers(async () => {
     const values = [1, 2, 3, 4]
@@ -244,7 +334,7 @@ function withAutoAdvancingTimers<Args extends unknown[]>(
 
     // eslint-disable-next-line no-unmodified-loop-condition, @typescript-eslint/no-unnecessary-condition
     while (!done) {
-      jest.runAllTimers()
+      jest.runOnlyPendingTimers()
       await Promise.resolve()
     }
 

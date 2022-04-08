@@ -34,14 +34,14 @@
  */
 export class Betterator<Value> {
   /** @internal */
-  private readonly _iterator: Iterator<Value>
+  private readonly _iterator: Iterator<Value, Value>
 
   /** @internal */
   private _result: IteratorResult<Value, Value> | undefined
 
   /** Constructs an {@link Betterator} from `iterator`. */
   public constructor(iterator: Iterator<Value>) {
-    this._iterator = iterator
+    this._iterator = iterator as Iterator<Value, Value>
   }
 
   /**
@@ -85,11 +85,13 @@ export class Betterator<Value> {
    * ```
    */
   public getNextOr<Default>(or: () => Default): Value | Default {
-    if (!this.hasNext()) {
+    const { value, done } =
+      this._result || (this._result = this._iterator.next())
+
+    if (done) {
       return or()
     }
 
-    const { value } = this._result!
     this._result = undefined
     return value
   }
@@ -126,14 +128,17 @@ export class Betterator<Value> {
  */
 export class AsyncBetterator<Value> {
   /** @internal */
-  private readonly _asyncIterator: AsyncIterator<Value>
+  private readonly _asyncIterator: AsyncIterator<Value, Value>
 
   /** @internal */
-  private _resultPromise: Promise<IteratorResult<Value, Value>> | undefined
+  private _lock: Promise<unknown> | undefined
+
+  /** @internal */
+  private _result: IteratorResult<Value, Value> | undefined
 
   /** Constructs an {@link AsyncBetterator} from `asyncIterator`. */
   public constructor(asyncIterator: AsyncIterator<Value>) {
-    this._asyncIterator = asyncIterator
+    this._asyncIterator = asyncIterator as AsyncIterator<Value, Value>
   }
 
   /**
@@ -144,11 +149,10 @@ export class AsyncBetterator<Value> {
    * This method may call the underlying native async iterator's `next` method.
    */
   public async hasNext(): Promise<boolean> {
-    return (
-      (
-        await (this._resultPromise ||
-          (this._resultPromise = this._asyncIterator.next()))
-      ).done !== true
+    return this._locking(
+      async () =>
+        (this._result || (this._result = await this._asyncIterator.next()))
+          .done !== true,
     )
   }
 
@@ -190,13 +194,36 @@ export class AsyncBetterator<Value> {
   public async getNextOr<Default>(
     or: () => Default | PromiseLike<Default>,
   ): Promise<Value | Default> {
-    if (!(await this.hasNext())) {
-      return or()
+    return this._locking(async () => {
+      const { value, done } =
+        this._result || (this._result = await this._asyncIterator.next())
+
+      if (done) {
+        return or()
+      }
+
+      this._result = undefined
+      return value
+    })
+  }
+
+  /** @internal */
+  private async _locking<Value>(
+    cb: () => Value | Promise<Value>,
+  ): Promise<Value> {
+    while (this._lock) {
+      await this._lock
     }
 
-    const { value } = (await this._resultPromise)!
-    this._resultPromise = undefined
-    return value
+    let resolve: (value?: unknown) => void
+    this._lock = new Promise(r => (resolve = r))
+
+    try {
+      return await cb()
+    } finally {
+      this._lock = undefined
+      resolve!()
+    }
   }
 
   /**
