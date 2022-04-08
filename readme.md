@@ -100,10 +100,10 @@ For bugs and feature requests,
 [please create an issue](https://github.com/TomerAberbach/betterator/issues/new).
 
 For pull requests, please read the
-[contributing guidelines](https://github.com/TomerAberbach/betterator/blob/master/contributing.md).
+[contributing guidelines](https://github.com/TomerAberbach/betterator/blob/main/contributing.md).
 
 ## License
 
-[Apache 2.0](https://github.com/TomerAberbach/betterator/blob/master/license)
+[Apache 2.0](https://github.com/TomerAberbach/betterator/blob/main/license)
 
 This is not an official Google product.
