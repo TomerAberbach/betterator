@@ -3,7 +3,7 @@
   "version": "2.0.2",
   "author": {
     "name": "Tomer Aberbach",
-    "email": "tomeraberbach@gmail.com",
+    "email": "tomer@aberba.ch",
     "url": "https://tomeraberba.ch"
   },
   "description": "A better sync and async iterator API.",
